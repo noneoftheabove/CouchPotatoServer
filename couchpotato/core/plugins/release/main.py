@@ -4,8 +4,8 @@ from couchpotato.core.event import fireEvent, addEvent
 from couchpotato.core.helpers.encoding import ss, toUnicode
 from couchpotato.core.helpers.variable import getTitle
 from couchpotato.core.logger import CPLog
+from couchpotato.core.media._base.scanner.main import ScannerBase
 from couchpotato.core.plugins.base import Plugin
-from couchpotato.core.plugins.scanner.main import Scanner
 from couchpotato.core.settings.model import File, Release as Relea, Media, \
     ReleaseInfo
 from couchpotato.environment import Env
@@ -155,7 +155,7 @@ class Release(Plugin):
             properties = {}
 
         # Check database and update/insert if necessary
-        return fireEvent('file.add', path = filepath, part = fireEvent('scanner.partnumber', file, single = True), type_tuple = Scanner.file_types.get(type), properties = properties, single = True)
+        return fireEvent('file.add', path = filepath, part = fireEvent('scanner.partnumber', file, single = True), type_tuple = ScannerBase.file_types.get(type), properties = properties, single = True)
 
     def deleteView(self, id = None, **kwargs):
 

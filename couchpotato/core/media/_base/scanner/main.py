@@ -19,7 +19,7 @@ import traceback
 log = CPLog(__name__)
 
 
-class Scanner(Plugin):
+class ScannerBase(Plugin):
 
     ignored_in_path = [os.path.sep + 'extracted' + os.path.sep, 'extracting', '_unpack', '_failed_', '_unknown_', '_exists_', '_failed_remove_',
                        '_failed_rename_', '.appledouble', '.appledb', '.appledesktop', os.path.sep + '._', '.ds_store', 'cp.cpnfo',

@@ -1,4 +1,4 @@
-from .main import Scanner
+from .main import ScannerBase
 
 def start():
     return Scanner()

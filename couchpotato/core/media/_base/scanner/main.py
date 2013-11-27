@@ -21,27 +21,23 @@ log = CPLog(__name__)
 
 class ScannerBase(Plugin):
 
+    scanner_type = '' # Must define a type for the scanner
+
     ignored_in_path = [os.path.sep + 'extracted' + os.path.sep, 'extracting', '_unpack', '_failed_', '_unknown_', '_exists_', '_failed_remove_',
                        '_failed_rename_', '.appledouble', '.appledb', '.appledesktop', os.path.sep + '._', '.ds_store', 'cp.cpnfo',
                        'thumbs.db', 'ehthumbs.db', 'desktop.ini'] #unpacking, smb-crap, hidden files
-    ignore_names = ['extract', 'extracting', 'extracted', 'movie', 'movies', 'film', 'films', 'download', 'downloads', 'video_ts', 'audio_ts', 'bdmv', 'certificate']
+    ignore_names = ['extract', 'extracting', 'extracted', 'download', 'downloads', 'video_ts', 'audio_ts', 'bdmv', 'certificate']
     extensions = {
-        'movie': ['mkv', 'wmv', 'avi', 'mpg', 'mpeg', 'mp4', 'm2ts', 'iso', 'img', 'mdf', 'ts', 'm4v'],
-        'movie_extra': ['mds'],
         'dvd': ['vts_*', 'vob'],
         'nfo': ['nfo', 'txt', 'tag'],
         'subtitle': ['sub', 'srt', 'ssa', 'ass'],
         'subtitle_extra': ['idx'],
-        'trailer': ['mov', 'mp4', 'flv']
     }
 
     file_types = {
         'subtitle': ('subtitle', 'subtitle'),
         'subtitle_extra': ('subtitle', 'subtitle_extra'),
-        'trailer': ('video', 'trailer'),
         'nfo': ('nfo', 'nfo'),
-        'movie': ('video', 'movie'),
-        'movie_extra': ('movie', 'movie_extra'),
         'backdrop': ('image', 'backdrop'),
         'poster': ('image', 'poster'),
         'thumbnail': ('image', 'thumbnail'),
@@ -49,8 +45,6 @@ class ScannerBase(Plugin):
     }
 
     file_sizes = { # in MB
-        'movie': {'min': 300},
-        'trailer': {'min': 2, 'max': 250},
         'backdrop': {'min': 0, 'max': 5},
     }
 
@@ -98,20 +92,15 @@ class ScannerBase(Plugin):
     cp_imdb = '(.cp.(?P<id>tt[0-9{7}]+).)'
 
     def __init__(self):
-
-        addEvent('scanner.create_file_identifier', self.createStringIdentifier)
-        addEvent('scanner.remove_cptag', self.removeCPTag)
-
-        addEvent('scanner.scan', self.scan)
-        addEvent('scanner.name_year', self.getReleaseNameYear)
-        addEvent('scanner.partnumber', self.getPartNumber)
+        if (!scanner_type):
+            log.error('Cannot use a scanner without a type defined')
 
     def scan(self, folder = None, files = None, release_download = None, simple = False, newer_than = 0, return_ignored = True, on_found = None):
 
         folder = sp(folder)
 
         if not folder or not os.path.isdir(folder):
-            log.error('Folder doesn\'t exists: %s', folder)
+            log.error('Folder doesn\'t exist: %s', folder)
             return {}
 
         # Get movie "master" files
@@ -150,7 +139,7 @@ class ScannerBase(Plugin):
                 continue
 
             is_dvd_file = self.isDVDFile(file_path)
-            if self.filesizeBetween(file_path, self.file_sizes['movie']) or is_dvd_file: # Minimal 300MB files or is DVD file
+            if self.filesizeBetween(file_path, self.file_sizes[scanner_type]) or is_dvd_file: # Minimal 300MB files or is DVD file
 
                 # Normal identifier
                 identifier = self.createStringIdentifier(file_path, folder, exclude_filename = is_dvd_file)
@@ -727,8 +716,9 @@ class ScannerBase(Plugin):
         return is_sample
 
     def filesizeBetween(self, file, file_size = []):
+        megabyte = 1048576
         try:
-            return (file_size.get('min', 0) * 1048576) < os.path.getsize(file) < (file_size.get('max', 100000) * 1048576)
+            return (file_size.get('min', 0) * megabyte) < os.path.getsize(file) < (file_size.get('max', 100000) * megabyte)
         except:
             log.error('Couldn\'t get filesize of %s.', file)
 
